@@ -15,6 +15,7 @@ func main() {
 	router.HandleFunc("/toogle", rest.ToogleSignalInGPIO).Methods("POST")
 	router.HandleFunc("/", rest.TestConnection).Methods("GET")
 	router.HandleFunc("/ledRgb", rest.RGBcontroller).Methods("POST")
+	router.HandleFunc("/gobotRGB", rest.GobotTest).Methods("POST")
 
 	log.Fatal(http.ListenAndServe(":7777", router))
 }

@@ -1,12 +1,16 @@
 package rest
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
 
 	data "github.com/rsoaresgouveia/raspberry-bush/entities"
 	"github.com/stianeikeland/go-rpio"
+
+	"gobot.io/x/gobot/drivers/gpio"
+	"gobot.io/x/gobot/platforms/raspi"
 )
 
 func ToogleSignalInGPIO(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +37,7 @@ func ToogleSignalInGPIO(w http.ResponseWriter, r *http.Request) {
 	} else {
 		println("Toogling signal to HIGH")
 	}
+
 	pin.Toggle()
 
 	w.WriteHeader(http.StatusOK)
@@ -48,36 +53,13 @@ func TestConnection(w http.ResponseWriter, r *http.Request) {
 }
 
 func RGBcontroller(w http.ResponseWriter, r *http.Request) {
-	freq := 64000
+	RGBLinker := data.RGBLinker{}
 
-	println("Getting hex color from URL")
-	query := r.URL.Query()["hex"]
-	hex := data.HEX{query[0]}
+	err := json.NewDecoder(r.Body).Decode(&RGBLinker)
 
-	fmt.Printf("Hex color: %#s", hex.Value)
-	println("Getting pins from URL")
+	errorHandler(err)
 
-	pinR, e1 := strconv.Atoi(r.URL.Query()["PinR"][0])
-	pinG, e2 := strconv.Atoi(r.URL.Query()["PinG"][0])
-	pinB, e3 := strconv.Atoi(r.URL.Query()["PinB"][0])
-
-	errorHandler(e1)
-	errorHandler(e2)
-	errorHandler(e3)
-
-	fmt.Printf("Pins are: r => %#d pin g => %#d b=> %#d\n", pinR, pinG, pinB)
-
-	pinLayout := data.PinRGBlayout{PinR: pinR, PinG: pinG, PinB: pinB}
-
-	red, eer1 := strconv.ParseInt(hex.Value[:2], 16, 32)
-	green, ee2 := strconv.ParseInt(hex.Value[2:4], 16, 32)
-	blue, ee3 := strconv.ParseInt(hex.Value[4:], 16, 32)
-
-	errorHandler(eer1)
-	errorHandler(ee2)
-	errorHandler(ee3)
-
-	rgb := data.Color{Red: red, Green: green, Blue: blue}
+	fmt.Printf("Pins are: r => %d pin g => %d b=> %d\n", RGBLinker.PinRGBlayout.PinR, RGBLinker.PinRGBlayout.PinG, RGBLinker.PinRGBlayout.PinB)
 
 	err_rpio := rpio.Open()
 
@@ -85,35 +67,30 @@ func RGBcontroller(w http.ResponseWriter, r *http.Request) {
 
 	errorHandler(err_rpio)
 
-	gpioR := rpio.Pin(pinLayout.PinR)
-	gpioG := rpio.Pin(pinLayout.PinG)
-	gpioB := rpio.Pin(pinLayout.PinB)
-
-	// pin := rpio.Pin(19)
-	// pin.Mode(rpio.Pwm)
-	// pin.Freq(64000)
-	// pin.DutyCycle(0, 32)
+	gpioR := rpio.Pin(RGBLinker.PinRGBlayout.PinR)
+	gpioG := rpio.Pin(RGBLinker.PinRGBlayout.PinG)
+	gpioB := rpio.Pin(RGBLinker.PinRGBlayout.PinB)
 
 	println("Creating pins frequency in PWM")
 
-	println(rgb.Red)
-	println(rgb.Green)
-	println(rgb.Blue)
-	println(float64(rgb.Red) / 255.0)
-	println(uint32(rgb.Green) / 255)
-	println(uint32(rgb.Blue) / 255)
+	// println(RGBLinker.RGB.Red)
+	// println(RGBLinker.RGB.Green)
+	// println(RGBLinker.RGB.Blue)
+	// println(uint32(RGBLinker.RGB.Red) / uint32(RGBLinker.Cycle.PinRcycle))
+	// println(uint32(RGBLinker.RGB.Green) / uint32(RGBLinker.Cycle.PinGcycle))
+	// println(uint32(RGBLinker.RGB.Blue) / uint32(RGBLinker.Cycle.PinBcycle))
 
 	gpioR.Mode(rpio.Pwm)
-	gpioR.Freq(freq)
-	gpioR.DutyCycle(uint32(rgb.Red)/255, uint32(rgb.Red)/255)
+	gpioR.DutyCycle(uint32(RGBLinker.RGB.Red), uint32(RGBLinker.Cycle.PinRcycle))
+	gpioR.Freq(RGBLinker.Freq)
 
 	gpioG.Mode(rpio.Pwm)
-	gpioG.Freq(freq)
-	gpioG.DutyCycle(uint32(rgb.Green)/255, uint32(rgb.Green)/255)
+	gpioR.DutyCycle(uint32(RGBLinker.RGB.Green), uint32(RGBLinker.Cycle.PinGcycle))
+	gpioG.Freq(RGBLinker.Freq)
 
 	gpioB.Mode(rpio.Pwm)
-	gpioB.Freq(freq)
-	gpioB.DutyCycle(uint32(rgb.Blue)/255, uint32(rgb.Blue)/255)
+	gpioR.DutyCycle(uint32(RGBLinker.RGB.Blue), uint32(RGBLinker.Cycle.PinBcycle))
+	gpioB.Freq(RGBLinker.Freq)
 
 	w.WriteHeader(http.StatusOK)
 
@@ -124,4 +101,24 @@ func errorHandler(err error) {
 	if err != nil {
 		println(err.Error())
 	}
+}
+
+func GobotTest(w http.ResponseWriter, r *http.Request) {
+	RGBLinker := data.RGBLinker{}
+
+	err := json.NewDecoder(r.Body).Decode(&RGBLinker)
+
+	errorHandler(err)
+	driver := raspi.NewAdaptor()
+	rgbDriver := gpio.NewRgbLedDriver(driver, string(RGBLinker.RGB.Red), string(RGBLinker.RGB.Green), string(RGBLinker.RGB.Blue))
+
+	rgbDriver.Connection().Connect()
+
+	if rgbDriver.State() != false {
+		rgbDriver.On()
+	} else {
+		rgbDriver.Off()
+	}
+	w.WriteHeader(http.StatusOK)
+
 }
