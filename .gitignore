@@ -15,6 +15,7 @@
 
 # Ignore `bin` dir
 bin/
+.idea/
 # or
 # */bin/*
 

@@ -8,9 +8,6 @@ import (
 
 	data "github.com/rsoaresgouveia/raspberry-bush/entities"
 	"github.com/stianeikeland/go-rpio"
-
-	"gobot.io/x/gobot/drivers/gpio"
-	"gobot.io/x/gobot/platforms/raspi"
 )
 
 func ToogleSignalInGPIO(w http.ResponseWriter, r *http.Request) {
@@ -101,24 +98,4 @@ func errorHandler(err error) {
 	if err != nil {
 		println(err.Error())
 	}
-}
-
-func GobotTest(w http.ResponseWriter, r *http.Request) {
-	RGBLinker := data.RGBLinker{}
-
-	err := json.NewDecoder(r.Body).Decode(&RGBLinker)
-
-	errorHandler(err)
-	driver := raspi.NewAdaptor()
-	rgbDriver := gpio.NewRgbLedDriver(driver, string(RGBLinker.RGB.Red), string(RGBLinker.RGB.Green), string(RGBLinker.RGB.Blue))
-
-	rgbDriver.Connection().Connect()
-
-	if rgbDriver.State() != false {
-		rgbDriver.On()
-	} else {
-		rgbDriver.Off()
-	}
-	w.WriteHeader(http.StatusOK)
-
 }
