@@ -49,50 +49,50 @@ func TestConnection(w http.ResponseWriter, r *http.Request) {
 	println("Testing connecton to the server on a raspberry pi")
 }
 
-func RGBcontroller(w http.ResponseWriter, r *http.Request) {
-	RGBLinker := data.RGBLinker{}
+// func RGBcontroller(w http.ResponseWriter, r *http.Request) {
+// 	RGBLinker := data.RGBLinker{}
 
-	err := json.NewDecoder(r.Body).Decode(&RGBLinker)
+// 	err := json.NewDecoder(r.Body).Decode(&RGBLinker)
 
-	errorHandler(err)
+// 	errorHandler(err)
 
-	fmt.Printf("Pins are: r => %d pin g => %d b=> %d\n", RGBLinker.PinRGBlayout.PinR, RGBLinker.PinRGBlayout.PinG, RGBLinker.PinRGBlayout.PinB)
+// 	fmt.Printf("Pins are: r => %d pin g => %d b=> %d\n", RGBLinker.PinRGBlayout.PinR, RGBLinker.PinRGBlayout.PinG, RGBLinker.PinRGBlayout.PinB)
 
-	err_rpio := rpio.Open()
+// 	err_rpio := rpio.Open()
 
-	defer rpio.Close()
+// 	defer rpio.Close()
 
-	errorHandler(err_rpio)
+// 	errorHandler(err_rpio)
 
-	gpioR := rpio.Pin(RGBLinker.PinRGBlayout.PinR)
-	gpioG := rpio.Pin(RGBLinker.PinRGBlayout.PinG)
-	gpioB := rpio.Pin(RGBLinker.PinRGBlayout.PinB)
+// 	gpioR := rpio.Pin(RGBLinker.PinRGBlayout.PinR)
+// 	gpioG := rpio.Pin(RGBLinker.PinRGBlayout.PinG)
+// 	gpioB := rpio.Pin(RGBLinker.PinRGBlayout.PinB)
 
-	println("Creating pins frequency in PWM")
+// 	println("Creating pins frequency in PWM")
 
-	// println(RGBLinker.RGB.Red)
-	// println(RGBLinker.RGB.Green)
-	// println(RGBLinker.RGB.Blue)
-	// println(uint32(RGBLinker.RGB.Red) / uint32(RGBLinker.Cycle.PinRcycle))
-	// println(uint32(RGBLinker.RGB.Green) / uint32(RGBLinker.Cycle.PinGcycle))
-	// println(uint32(RGBLinker.RGB.Blue) / uint32(RGBLinker.Cycle.PinBcycle))
+// 	// println(RGBLinker.RGB.Red)
+// 	// println(RGBLinker.RGB.Green)
+// 	// println(RGBLinker.RGB.Blue)
+// 	// println(uint32(RGBLinker.RGB.Red) / uint32(RGBLinker.Cycle.PinRcycle))
+// 	// println(uint32(RGBLinker.RGB.Green) / uint32(RGBLinker.Cycle.PinGcycle))
+// 	// println(uint32(RGBLinker.RGB.Blue) / uint32(RGBLinker.Cycle.PinBcycle))
 
-	gpioR.Mode(rpio.Pwm)
-	gpioR.DutyCycle(uint32(RGBLinker.RGB.Red), uint32(RGBLinker.Cycle.PinRcycle))
-	gpioR.Freq(RGBLinker.Freq)
+// 	gpioR.Mode(rpio.Pwm)
+// 	gpioR.DutyCycle(uint32(RGBLinker.RGB.Red), uint32(RGBLinker.Cycle.PinRcycle))
+// 	gpioR.Freq(RGBLinker.Freq)
 
-	gpioG.Mode(rpio.Pwm)
-	gpioR.DutyCycle(uint32(RGBLinker.RGB.Green), uint32(RGBLinker.Cycle.PinGcycle))
-	gpioG.Freq(RGBLinker.Freq)
+// 	gpioG.Mode(rpio.Pwm)
+// 	gpioR.DutyCycle(uint32(RGBLinker.RGB.Green), uint32(RGBLinker.Cycle.PinGcycle))
+// 	gpioG.Freq(RGBLinker.Freq)
 
-	gpioB.Mode(rpio.Pwm)
-	gpioR.DutyCycle(uint32(RGBLinker.RGB.Blue), uint32(RGBLinker.Cycle.PinBcycle))
-	gpioB.Freq(RGBLinker.Freq)
+// 	gpioB.Mode(rpio.Pwm)
+// 	gpioR.DutyCycle(uint32(RGBLinker.RGB.Blue), uint32(RGBLinker.Cycle.PinBcycle))
+// 	gpioB.Freq(RGBLinker.Freq)
 
-	w.WriteHeader(http.StatusOK)
+// 	w.WriteHeader(http.StatusOK)
 
-	println("Done")
-}
+// 	println("Done")
+// }
 
 func errorHandler(err error) {
 	if err != nil {
